@@ -28,7 +28,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let leaning = vectstr[2].parse::<f64>().unwrap_or_default();
         let direction = vectstr[3].parse::<f64>().unwrap_or_default();
         
-        let leaning_inv = 1800.0 - leaning;
+        let leaning_inv = 180.0 - leaning/10.0;
         let output = pid.next_control_output(leaning_inv);
         
         let v = output.output;
