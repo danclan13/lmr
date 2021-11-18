@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut i2c = I2c::new()?;
     i2c.set_slave_address(0x53)?;
 
-    let mut pid = Pid::new(0.20, 0.002, 0.04, 70.0, 70.0, 70.0, 70.0, 1800.0);
+    let mut pid = Pid::new(0.20, 0.002, 0.04, 70.0, 70.0, 70.0, 70.0, 180.0);
 
     loop {
         
@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let v2 = v*(angle2.cos())+80.0;
         let v3 = -1.0*v*(angle3.cos())+80.0;
         
-        //let mut buffer_w = [251,v1 as u8,252,v2 as u8,253,v3 as u8,1];
+        //let mut buffer_w = [251,v1 as u8,252,v2 as u8,253,v3 as u8,1];  // needs a flush
         //i2c.block_write(0x1E, &mut buffer_w).unwrap_or_default();
 
 
