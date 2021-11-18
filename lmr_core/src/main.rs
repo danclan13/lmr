@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut i2c = I2c::new()?;
     i2c.set_slave_address(0x53)?;
 
-    let mut pid = Pid::new(0.50, 0.004, 0.08, 70.0, 70.0, 70.0, 70.0, 180.0);
+    let mut pid = Pid::new(2.50, 0.004, 0.08, 70.0, 70.0, 70.0, 70.0, 180.0);
 
     loop {
         
