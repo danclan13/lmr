@@ -8,9 +8,16 @@
 
 int motor[3];
 volatile boolean rFlag = false;
-volatile byte i2cdata[16];
+volatile byte i2cdata[256];
+uint8_t writeBufferIndex;
+uint8_t readBufferIndex;
+
 unsigned long i2ctimeout = 300000;
 unsigned long i2ct = 0;
+int dir=0;
+int spd=0;
+int dir_old=0;
+int spd_old=0;
 
 //Define Variables we'll be connecting to
 int Input1, Output1, Input2, Output2, Input3, Output3;
@@ -108,37 +115,29 @@ pinMode(hall_31, INPUT);
   enableInterrupt(hall_21, interruptFunction2,RISING);  
   enableInterrupt(hall_31, interruptFunction3,RISING);
 
+writeBufferIndex = 0;
+readBufferIndex = 0;
 }
 
 void loop()
 { 
-  Setpoint1 = motor[0];
-  Setpoint2 = motor[1];
-  Setpoint3 = motor[2];
-
+/****************************************************************
+ * 
+ *   begin I2C read and timeout funcitons
+ * 
+ ****************************************************************/
+  
   if (rFlag == true)  // when data is availabe -> read it 
   {
-    for (int i=0; i<3; i++){
-    if (i2cdata[0] == 251+i)
-    motor[i] = i2cdata[1]-80;}
+    LoadBytes();
+    
+    rFlag = false;
+    i2ct = micros();
     Serial.print(motor[0]);
     Serial.print(",");
     Serial.print(motor[1]);
     Serial.print(",");
     Serial.println(motor[2]);
-    //Serial.print(i2cdata[0]);
-    //Serial.print(",");
-    //Serial.print(i2cdata[1]);
-    //Serial.print(",");
-    //Serial.print(i2cdata[2]);
-    //Serial.print(",");
-    //Serial.print(i2cdata[3]);
-    //Serial.print(",");
-    //Serial.print(i2cdata[4]);
-    //Serial.print(",");
-    //Serial.println(i2cdata[5]);
-    rFlag = false;
-    i2ct = micros();
   }
 
   if ((micros()-i2ct) > i2ctimeout)   // timeout for i2c signal
@@ -148,10 +147,46 @@ void loop()
       motor[i] = 0;}
     i2ct = micros();
     }
+
+/****************************************************************
+ * 
+ *   end I2C read and timeout funcitons
+ * 
+ ****************************************************************/
+
+
+/****************************************************************
+ * 
+ *   begin changing motor setpoints
+ * 
+ ****************************************************************/
+// if speed or direction change requested change motor setpoints
+
+  if(spd!=spd_old || dir!=dir_old){
+    motorspd_Deg(spd,dir);
+    spd_old=spd;
+    dir_old=dir;
+  }
   
+  Setpoint1 = motor[0];
+  Setpoint2 = motor[1];
+  Setpoint3 = motor[2];
+
   
-unsigned long i2ctimeout = 300000;
-unsigned long i2ct = 0;
+/****************************************************************
+ * 
+ *   end changing motor setpoints
+ * 
+ ****************************************************************/
+
+
+
+/****************************************************************
+ * 
+ *   begin RPM and PID calculations
+ * 
+ ****************************************************************/
+// calculate revolutions per minute
 
   dt1 = t1_updated - t1; 
   if (dt1 > braketime || (micros()-t1_updated) > braketime) 
@@ -175,11 +210,37 @@ unsigned long i2ct = 0;
   Input2 = rpm2;
   Input3 = rpm3;
 
+// get output valuues form PID loop
   
   int16_t Output1 = PID1.step(Setpoint1, Input1);
   int16_t Output2 = PID2.step(Setpoint2, Input2);
   int16_t Output3 = PID3.step(Setpoint3, Input3);
 
+  motor_write(Output1,Output2,Output3);
+/****************************************************************
+ * 
+ *   begin RPM and PID calculations and write to motors
+ * 
+ ****************************************************************/
+ 
+
+
+}
+
+
+void motorspd_Deg(int spd, int angle){
+  // create intermidiate angles
+  int angle_1 = PI/3+angle*PI;
+  int angle_2 = PI/3-angle*PI;
+  int angle_3 = angle*PI;
+  // calculate motor speed settings
+  motor[1] = spd*cos(angle_1);
+  motor[2] = spd*cos(angle_2);
+  motor[3] = -spd*cos(angle_3);
+}
+
+void motor_write(int16_t Output1,int16_t Output2,int16_t Output3){
+  // reorder output pins depending on PID loop output
 
   if (Output1 < 0) 
     {Output1 = -Output1;
@@ -205,6 +266,7 @@ unsigned long i2ct = 0;
     {in_31 = pwm_31;
     in_32 = pwm_32;}
 
+// write to motors
 
   analogWrite(in_11, Output1);
   analogWrite(in_12, 0);
@@ -216,17 +278,68 @@ unsigned long i2ct = 0;
 
   analogWrite(in_31, Output3);
   analogWrite(in_32, 0);
-
 }
 
+/****************************************************************
+ * 
+ *   begin interrupts
+ * 
+ ****************************************************************/
 
+  char lastbyte;
+  char lastbyte2;
+void LoadBytes(void){
+  while(writeBufferIndex!=readBufferIndex) 
+    {
+      if (i2cdata[readBufferIndex] == 251)
+      {
+        readBufferIndex++;
+        motor[0] = i2cdata[readBufferIndex]-80;
+      }
+      else if (i2cdata[readBufferIndex] == 252)
+      {
+        readBufferIndex++;
+        motor[1] = i2cdata[readBufferIndex]-80;
+      }
+      else if (i2cdata[readBufferIndex] == 253)
+      {
+        readBufferIndex++;
+        motor[2] = i2cdata[readBufferIndex]-80;
+      }
+      else if(i2cdata[readBufferIndex] == 241){
+        readBufferIndex++;
+        spd = i2cdata[readBufferIndex];   // write speed value
+      }
+      else if(i2cdata[readBufferIndex] == 242){
+        readBufferIndex++;
+        dir = i2cdata[readBufferIndex];   // write angle value
+        
+      }
+       readBufferIndex++; 
+      
+    }
+}
 
 void receiveEvent(int howMany) {
-  for (int i=0; i<howMany && i<8; i++)
+//  for (int i=0; i<howMany && i<8; i++)
+//  {
+//    i2cdata[i] = Wire.read(); // receive byte as a character
+//  }
+//  rFlag = true;
+//
+  while (howMany>0)
   {
-    i2cdata[i] = Wire.read(); // receive byte as a character
+    howMany--;
+    i2cdata[writeBufferIndex] = Wire.read(); // receive byte as a character
+    lastbyte2=lastbyte;
+    lastbyte = i2cdata[writeBufferIndex];
+    writeBufferIndex++;
+   
+    if(lastbyte2 == '\n' && lastbyte == '\r' ){
+      rFlag = true;
+      break;
+    }
   }
-  rFlag = true;
 }
 
 void interruptFunction1() {
@@ -246,3 +359,9 @@ void interruptFunction1() {
    t3_updated = micros();
    sign3 = -1 + (digitalRead(hall_32))*2;
  }
+ 
+/****************************************************************
+ * 
+ *   end interrupts
+ * 
+ ****************************************************************/
