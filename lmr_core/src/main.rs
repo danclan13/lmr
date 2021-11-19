@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let v2 = v*(angle2.cos())+80.0;
         let v3 = -1.0*v*(angle3.cos())+80.0;
         
-        let mut buffer_w = [251,v1 as u8,252,v2 as u8,253,v3 as u8,0xA,0x15];  // needs a flush
+        let mut buffer_w = [251,v1 as u8,252,v2 as u8,253,v3 as u8,0xA,0xD];  // needs a flush
         i2c.block_write(0x01, &mut buffer_w).unwrap_or_default();
 
         //i2c.cmd_write(251 as u8,v1 as u8).unwrap_or_default();
