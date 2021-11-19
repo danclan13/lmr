@@ -126,6 +126,17 @@ void loop()
     Serial.print(motor[1]);
     Serial.print(",");
     Serial.println(motor[2]);
+    //Serial.print(i2cdata[0]);
+    //Serial.print(",");
+    //Serial.print(i2cdata[1]);
+    //Serial.print(",");
+    //Serial.print(i2cdata[2]);
+    //Serial.print(",");
+    //Serial.print(i2cdata[3]);
+    //Serial.print(",");
+    //Serial.print(i2cdata[4]);
+    //Serial.print(",");
+    //Serial.println(i2cdata[5]);
     rFlag = false;
     i2ct = micros();
   }
