@@ -45,7 +45,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         //let outputy = pidy.next_control_output(leaning_ypart);
         let mut vx = outputx.output;
         if leaning_xpart>0.0 {
-            vx = outputxn.output;
+            vx = -outputxn.output;
         }
                 
         //let vy = outputy.output;
