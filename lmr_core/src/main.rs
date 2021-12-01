@@ -16,8 +16,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut pidxn = Pid::new(2.5, 0.005, 0.02, 97.0, 97.0, 97.0, 97.0, 0.0);
     //let mut pidy = Pid::new(2.5, 0.005, 0.02, 97.0, 97.0, 97.0, 97.0, 0.0);
 
-    let vx = 0.0;
-
     loop {
         
         thread::sleep(Duration::from_millis(10));
@@ -42,17 +40,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let leaning_xpart = (leaning/10.0)*(angle3.sin());
         //let leaning_ypart = (leaning/10.0)*(angle3.cos());
-
         let outputx = pidx.next_control_output(leaning_xpart);
         let outputxn = pidxn.next_control_output(-leaning_xpart);
         //let outputy = pidy.next_control_output(leaning_ypart);
+        let mut vx = outputx.output;
         if leaning_xpart>0.0 {
-            let vx = outputxn.output;
+            vx = outputxn.output;
         }
-        else {
-            let vx = outputx.output;
-        }
-        
+                
         //let vy = outputy.output;
         //let v = (vx.powi(2)+vy.powi(2)).sqrt();
 
@@ -63,6 +58,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         
         //let mut buffer_w = [251,v1 as u8,252,v2 as u8,253,v3 as u8,0xA,0xD];  // needs a flush
         //i2c.block_write(0x01, &mut buffer_w).unwrap_or_default();
-        println!("Lx: {} Vx: {}", leaning_xpart as u8, vx as u8);}}
+        println!("Lx: {} Vx: {}", leaning_xpart, vx as u8);}}
     }        
 }
