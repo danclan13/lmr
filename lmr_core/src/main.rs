@@ -13,7 +13,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     i2c.set_slave_address(0x53)?;
 
     let mut pidx = Pid::new(2.5, 0.005, 0.02, 97.0, 97.0, 97.0, 97.0, 0.0);
+    let mut pidxn = Pid::new(2.5, 0.005, 0.02, 97.0, 97.0, 97.0, 97.0, 0.0);
     //let mut pidy = Pid::new(2.5, 0.005, 0.02, 97.0, 97.0, 97.0, 97.0, 0.0);
+
+    let vx = 0.0;
 
     loop {
         
@@ -41,9 +44,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         //let leaning_ypart = (leaning/10.0)*(angle3.cos());
 
         let outputx = pidx.next_control_output(leaning_xpart);
+        let outputxn = pidxn.next_control_output(-leaning_xpart);
         //let outputy = pidy.next_control_output(leaning_ypart);
+        if leaning_xpart>0.0 {
+            let vx = outputxn.output;
+        }
+        else {
+            let vx = outputx.output;
+        }
         
-        let vx = outputx.output;
         //let vy = outputy.output;
         //let v = (vx.powi(2)+vy.powi(2)).sqrt();
 
