@@ -63,6 +63,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         
         //let mut buffer_w = [251,v1 as u8,252,v2 as u8,253,v3 as u8,0xA,0xD];  // needs a flush
         //i2c.block_write(0x01, &mut buffer_w).unwrap_or_default();
-        println!("Lx: {} Vx: {}", leaning_xpart, vx as u8);}}
+        println!("Lx: {} Vx: {}", leaning_xpart as u8, vx as u8);}}
     }        
 }
