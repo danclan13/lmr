@@ -111,9 +111,10 @@ void loop() {
 #endif
 
   // print the heading, pitch and roll
-  roll = filter.getRoll()-2.365;
-  pitch = filter.getPitch();
+  roll = filter.getRoll()-3.1;
+  pitch = filter.getPitch()+2.7;
   heading = filter.getYaw();
+
   //float headingN, headingW; 
   //headingN = fabs(heading);
   //headingW = 57.3*acos(sin((heading)/57.3));
@@ -123,7 +124,7 @@ void loop() {
   //Serial.print(headingN);
   //Serial.print(",HeadingW:");
   //Serial.println(headingW);
-  //Serial.print(", Pitch(y):");
+  //Serial.print("Pitch(y):");
   //Serial.print(pitch);
   //Serial.print(", Roll(x):");
   //Serial.println(roll);
