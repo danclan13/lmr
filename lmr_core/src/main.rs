@@ -14,7 +14,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut pidx = Pid::new(2.5, 0.005, 0.02, 97.0, 97.0, 97.0, 97.0, 0.0);
     let mut pidxn = Pid::new(2.5, 0.005, 0.02, 97.0, 97.0, 97.0, 97.0, 0.0);
-    //let mut pidy = Pid::new(2.5, 0.005, 0.02, 97.0, 97.0, 97.0, 97.0, 0.0);
+    let mut pidy = Pid::new(2.5, 0.005, 0.02, 97.0, 97.0, 97.0, 97.0, 0.0);
+    let mut pidyn = Pid::new(2.5, 0.005, 0.02, 97.0, 97.0, 97.0, 97.0, 0.0);
 
     loop {
         
@@ -39,25 +40,29 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 
         let leaning_xpart = (leaning/10.0)*(angle3.sin());
-        //let leaning_ypart = (leaning/10.0)*(angle3.cos());
+        let leaning_ypart = (leaning/10.0)*(angle3.cos());
         let outputx = pidx.next_control_output(leaning_xpart);
         let outputxn = pidxn.next_control_output(-leaning_xpart);
-        //let outputy = pidy.next_control_output(leaning_ypart);
+        let outputy = pidy.next_control_output(leaning_ypart);
+        let outputyn = pidyn.next_control_output(-leaning_ypart);
         let mut vx = outputx.output;
+        let mut vy = outputy.output;
         if leaning_xpart>0.0 {
             vx = -outputxn.output;
         }
-                
-        //let vy = outputy.output;
-        //let v = (vx.powi(2)+vy.powi(2)).sqrt();
+        if leaning_ypart>0.0 {
+            vy = -outputyn.output;
+        }
+        
+        let v = (vx.powi(2)+vy.powi(2)).sqrt();
 
  
-        //let v1 = v*(angle1.cos())+80.0;
-        //let v2 = v*(angle2.cos())+80.0;
-        //let v3 = -1.0*v*(angle3.cos())+80.0;
+        let v1 = v*(angle1.cos())+80.0;
+        let v2 = v*(angle2.cos())+80.0;
+        let v3 = -1.0*v*(angle3.cos())+80.0;
         
-        //let mut buffer_w = [251,v1 as u8,252,v2 as u8,253,v3 as u8,0xA,0xD];  // needs a flush
-        //i2c.block_write(0x01, &mut buffer_w).unwrap_or_default();
+        let mut buffer_w = [251,v1 as u8,252,v2 as u8,253,v3 as u8,0xA,0xD];  // needs a flush
+        i2c.block_write(0x01, &mut buffer_w).unwrap_or_default();
         println!("Lx: {} Vx: {}", leaning_xpart, vx);}}
     }        
 }
