@@ -21,7 +21,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         
         thread::sleep(Duration::from_millis(10));
 
-        let s = uart.read_line().unwrap_or_default();
+       /* let s = uart.read_line().unwrap_or_default();
         if s.trim().is_empty() == false {
         let spl = s.trim().split(",");
         let vectstr: Vec<&str> = spl.collect();
@@ -30,7 +30,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         let heading = vectstr[1].parse::<f64>().unwrap_or_default();
         let leaning = vectstr[2].parse::<f64>().unwrap_or_default();
         let direction = vectstr[3].parse::<f64>().unwrap_or_default();
-
+        */
+        let direction = 1800.0;
+        let leaning = 1800.0;
         let angle1 = PI/3.0+direction*PI/1800.0;
         let angle2 = PI/3.0-direction*PI/1800.0;
         let angle3 = direction*PI/1800.0;
@@ -63,6 +65,5 @@ fn main() -> Result<(), Box<dyn Error>> {
         
         let mut buffer_w = [251,v1 as u8,252,v2 as u8,253,v3 as u8,0xA,0xD];  // needs a flush
         i2c.block_write(0x01, &mut buffer_w).unwrap_or_default();
-        println!("Lx: {} Vx: {}", leaning_xpart, vx);}}
+        println!("Lx: {} Vx: {}", leaning_xpart, vx);}
     }        
-}
